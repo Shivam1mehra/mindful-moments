@@ -76,7 +76,7 @@ def home():
     return send_from_directory("static", "index.html")
 
 
-@app.route("https://mindful-moments-1-glip.onrender.com//checkin", methods=["POST"])
+@app.route("/checkin", methods=["POST"])
 def checkin():
     data = request.json
     user_id = data.get("user_id", "guest")
