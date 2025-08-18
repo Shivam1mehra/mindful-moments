@@ -1,0 +1,7 @@
+body { font-family: Arial, sans-serif; background:#f2fbff; color:#0b3140; padding:20px; }
+.container { max-width:600px; margin:0 auto; }
+.chat { background:white; padding:12px; min-height:200px; border-radius:8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); overflow:auto; margin-bottom:12px;}
+.bot { background:#e6f4ff; padding:8px; border-radius:8px; margin:6px 0; }
+.user { text-align:right; background:#dff7e0; padding:8px; border-radius:8px; margin:6px 0; }
+.controls { display:flex; gap:8px; }
+.controls input { flex:1; padding:8px; }
