@@ -65,47 +65,36 @@ def classify_and_reply(user_message, chat_history=[]):
 def home():
     return send_from_directory("static", "index.html")
 
+import json
+
 @app.route("/checkin", methods=["POST"])
 def checkin():
     data = request.json
-    user_id = data.get("user_id", "guest")
-    message = data.get("message", "")
+    user_message = data.get("message", "")
 
-    result = classify_and_reply(message)
-    intent = result["intent"]
-    reply = result["reply"]
-
-    # Default
-    exercise_steps = []
-
-    # If negative, prepare guided breathing sequence
-    if intent == "negative":
-        exercise_steps = [
-            "Find a comfortable position and gently close your eyes.",
-            "Bring your attention to your breath — just notice it.",
-            "Slowly inhale through your nose... and exhale through your mouth.",
-            "Expand awareness to your whole body — notice any tension.",
-            "When you’re ready, gently open your eyes and return to the present."
+    # Call Groq or your AI
+    response = client.chat.completions.create(
+        model="llama3-8b-8192",
+        messages=[
+            {"role": "system", "content": "You are a friendly therapist-style chatbot."},
+            {"role": "user", "content": user_message},
         ]
-
-
-    # Save in DB
-    conn = sqlite3.connect(DB_FILE)
-    cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO checkins (user_id, date, feeling, exercise_done) VALUES (?, ?, ?, ?)",
-        (user_id, datetime.utcnow().isoformat(), intent, 0)
     )
-    checkin_id = cur.lastrowid
-    conn.commit()
-    conn.close()
 
-    return jsonify({
-        "reply": reply,
-        "intent": intent,
-        "checkin_id": checkin_id,
-        "exercise": exercise_steps
-    })
+    raw_result = response.choices[0].message["content"]
+
+    try:
+        # Try parsing as JSON
+        result = json.loads(raw_result)
+        intent = result.get("intent", "unknown")
+        reply = result.get("reply", raw_result)
+    except json.JSONDecodeError:
+        # If not JSON, just treat it as plain text
+        intent = "unknown"
+        reply = raw_result
+
+    return jsonify({"reply": reply, "intent": intent})
+
 
 import os
 
