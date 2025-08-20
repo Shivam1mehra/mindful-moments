@@ -32,40 +32,34 @@ def init_db():
 
 init_db()
 
-def classify_and_reply(user_message):
-    """Use Groq AI to generate empathetic replies + detect intent"""
+def classify_and_reply(user_message, chat_history=[]):
+    """Use Groq AI to generate therapist-like replies"""
     prompt = f"""
-    You are Mindful Moments, a friendly mental health companion.
-    The user says: "{user_message}"
+    You are Mindful Moments, a warm, kind therapist-like companion.
+    Your role is to listen, validate emotions, and ask gentle follow-up questions.
+    Speak in a supportive, conversational tone, like a caring friend or therapist.
+    Be empathetic, never judgmental, and encourage self-reflection.
 
-    1. First, classify the intent as one of:
-       - positive
-       - negative
-       - neutral
+    Conversation so far:
+    {chat_history}
 
-    2. Then, write a short, empathetic reply in a caring tone.
-       If intent is negative, encourage them to try a short breathing exercise.
-    Return the result in JSON format like:
-    {{
-      "intent": "...",
-      "reply": "..."
-    }}
+    User: "{user_message}"
+    
+    Please respond as if you are continuing this therapy-style conversation.
     """
 
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",  # fast, empathetic
-        messages=[{"role": "system", "content": "You are a helpful, kind mental health chatbot."},
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "system", "content": "You are a supportive therapist-like companion."},
                   {"role": "user", "content": prompt}],
-        temperature=0.7,
+        temperature=0.8,
     )
 
     try:
-        import json
-        content = response.choices[0].message.content.strip()
-        data = json.loads(content)
-        return data
+        return response.choices[0].message.content.strip()
     except Exception:
-        return {"intent": "neutral", "reply": "I'm here with you. Can you tell me a bit more about how you feel?"}
+        return "I’m here with you. Can you tell me more about what’s on your mind?"
+
 
 @app.route("/")
 def home():
@@ -118,3 +112,4 @@ import os
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # Render assigns PORT automatically
     app.run(host="0.0.0.0", port=port)
+ 
