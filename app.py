@@ -72,24 +72,25 @@ def checkin():
     data = request.json
     user_message = data.get("message", "")
 
-    # Call Groq or your AI
+    # Call Groq AI
     response = client.chat.completions.create(
         model="llama3-8b-8192",
         messages=[
-            {"role": "system", "content": "You are a friendly therapist-style chatbot."},
+            {"role": "system", "content": "You are a warm, supportive therapist-style chatbot."},
             {"role": "user", "content": user_message},
         ]
     )
 
-    raw_result = response.choices[0].message["content"]
+    # ✅ Access message properly
+    raw_result = response.choices[0].message.content
 
     try:
-        # Try parsing as JSON
+        # Try parsing AI response as JSON
         result = json.loads(raw_result)
         intent = result.get("intent", "unknown")
         reply = result.get("reply", raw_result)
     except json.JSONDecodeError:
-        # If not JSON, just treat it as plain text
+        # If plain text, just return it
         intent = "unknown"
         reply = raw_result
 
